@@ -47,69 +47,11 @@ def get_county():
     return a
 
 def updateJobValue(id):
-    # job_query = Job.query.filter_by(id = id)
     supplies = Supply.query.filter_by(job_id = id)
-    # print(supplies)
-    # value = db.select(db.func.sum(supplies.total))
     sum_query = db.select(db.func.sum(Supply.total)).where(Supply.job_id == id)
     value = db.engine.execute(sum_query).first()[0]
-    # print(value)
-    # print(job_schema.dump(job_query))
-    # job_query = Job.query.filter_by(id = id).first()
-    # job_query.value = value
-    # db.session.commit()
-    # print(job_schema.dump(job_query))
 
     return value
-
-    # query = db.select([db.func.sum(payment_table.c.amount)])
-
-def printPdf_normal_css_import(context):
-    css = 'api/static/styles_print.css'
-    # css = 'styles_print.css'
-    config = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
-    html_string = render_template('print.html', **context)
-    pdf = pdfkit.from_string(html_string, False, configuration=config, css = css)
-    # In the above we incorporate the css as shown, it can be left blank and incoporated inside the html
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=output.pdf'
-    return response
-
-
-
-def printPdf2(context, a):
-    #Since we are using wkhtmltopdf we the css that we are to incorporate is to use webkit rendering engine
-    context['type'] = a[0]
-    x = datetime.datetime.now()
-    context["date"] = x.strftime(" %d/%m/%Y")
-    print(context)
-    # To incorporate the css
-    options = {
-        'quiet': '',
-        'enable-local-file-access': '',
-        'page-size': 'Letter',
-        'orientation': 'Portrait',
-        'margin-top': '0.75in',
-        'margin-right': '0.75in',
-        'margin-bottom': '0.75in',
-        'margin-left': '0.75in',
-        'no-outline': None,
-        'encoding': 'UTF-8',
-        'custom-header': [
-            ('Accept-Encoding', 'gzip')
-        ],
-        'user-style-sheet': 'api/static/stylesWebkit.css'
-    }
-
-    # pdfkit.from_string(html_string, 'out.pdf', options=options)
-    config = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
-    html_string = render_template('print.html', **context)
-    pdf = pdfkit.from_string(html_string, False, configuration=config, options=options)
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=output.pdf'
-    return response
 
 def createNotes(job):
     notes = Note.query.order_by(Note.id.desc())
@@ -176,13 +118,15 @@ def printPdf(context, a):
         'user-style-sheet': 'api/static/stylesWebkit.css'
     }
 
-    config = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
+    #Note we provide the config when wkhtmltopdf is not in your system path, 
+    # config = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
     
     for item in a:
         # Generate the PDF
         context['type'] = item
         html_string = render_template('print.html', **context)
-        pdf = pdfkit.from_string(html_string, False, configuration=config, options=options)
+        pdf = pdfkit.from_string(html_string, False, options=options)
+        # pdf = pdfkit.from_string(html_string, False, configuration=config, options=options)
         pdfs.append(io.BytesIO(pdf))
     
     merged_pdf = merge_pdfs(pdfs)

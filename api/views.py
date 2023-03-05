@@ -32,74 +32,12 @@ login_manager = LoginManager()
 
 methods=["POST", "GET", "PUT", "DELETE"]
 
+
+#Main route while serving the app
 @main.route('/')
 @cross_origin()
 def serve():
     return send_from_directory(app.static_folder, 'index.html')
-
-# decorators
-# def token_required(f):
-#     @wraps(f)
-#     def decorator(*args, **kwargs):
-#         token = None
-#         # if 'x-access-tokens' in request.headers:
-#         #     token = request.headers['x-access-tokens']
-#         if "Authorization" in request.headers:
-#             token = request.headers["Authorization"].split()[1]
-#         if not token:
-#             return jsonify({'message': "a valid token is missing"})
-#         try:
-#             data = jwt.decode(token,"SECRET_KEY", algorithms =['HS256'])
-#             current_user = User.query.filter_by(id=data['id']).first()
-#         except:
-#             return jsonify({'message': 'token is invalid'})
-
-#         return f(*args, **kwargs)
-#     return decorator
-
-# def auth_required(f):
-#     @wraps(f)
-#     def decorated(*args, **kwargs):
-#         auth = request.authorization
-#         if auth and auth.username == 'username1' and auth.password == 'password':
-#             return f(*args, **kwargs)
-#         return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
-#     return decorated
-
-# @main.route('/t')
-# def test():
-#     if request.authorization and request.authorization.username == 'username' and request.authorization.password == 'password':
-#         return '<h1>You are logged in!</h1>'
-#     else:
-#         return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
-#     #return jsonify({'msg': "Hello World"})
-
-# @main.route('page')
-# @auth_required
-# def page():
-#     return '<h1>You are on page </h1>'
-
-##The below functions used for the purpose of the tutorial
-@main.route('/add_movie', methods = ["POST"])
-def add_movie():
-    movie_data = request.get_json()
-    #new_movie = Movie(title=movie_data['title'], ratings=movie_data['ratings'])
-    new_movie = Movie(**movie_data)
-    db.session.add(new_movie)
-    db.session.commit()
-    print(new_movie)
-
-    #return 'Done', 201
-    return movie_schema.jsonify(new_movie)
-
-@main.route('/movies')
-def movies():
-    movies_list = Movie.query.all()
-    movies = movies_schema.dump(movies_list)
-    #print(movies, file=sys.stderr)
-
-    #return jsonify(movies)
-    return jsonify({'movies': movies})
 
 #Registration
 @main.route('/register', methods=['POST'])
@@ -139,15 +77,6 @@ def login():
         #Login Successfull
         login_user(check_username) # Sets the current user to the user provided
 
-        #Creating a token with PyJWT --- Can create both access token and refresh token
-        # token = jwt.encode(
-        #     {
-        #         "id" : check_username.id,
-        #         'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)
-        #     },
-        #     "SECRET_KEY",
-        #     algorithm='HS256'
-        # )
         #Creating an access token with JWT-extended - default expire time == 15min
         access_token = create_access_token(identity=username)
 
@@ -157,7 +86,6 @@ def login():
         res_data = {
             "msg": "Login Successfull",
             "roles": [2001, 1984],
-            # "token" : token,
             "access_token":access_token,
             "refresh_token": refresh_token
         }
@@ -167,17 +95,12 @@ def login():
 
 
 @main.route("/logout")
-# @login_required
-#@login_manager.user_loader
-#@app.login_manager.user_loader
 def logout():
     logout_user()
     return jsonify({'msg': "Logged Out"})
 
 @main.route(('/getUsers'))
-#@token_required ### Using pyPWT
 @jwt_required() #Using jwt-extend (In this case only the access token required)
-#@jwt_required(refresh=True) #Using jwt-extend --- Refresh token required
 @cross_origin()
 def get_users():
     users_list = User.query.all()
@@ -290,11 +213,9 @@ def clientDetail(id):
 def personnel(id):
     company = Company.query.filter_by(id=id).first()
     persons_query = Person.query.filter_by(company_id=id)
-    # persons_query = Person.query.with_parent(company)
     persons_query = company.personnel
     if request.method == "GET":
         persons = persons_schema.dump(persons_query)
-        # print(persons)
         return jsonify(persons)
 
     #Retrieving and saving new person object
@@ -329,11 +250,9 @@ def personnel(id):
 @main.route("/products", methods=["POST", "GET", "PUT", "DELETE"])
 @cross_origin()
 def products():
-    # print(request.get_json())
     # Retrieving list of products from the database
     if request.method == "GET":
         products_query = Product.query.all()
-        # products = products_schema.dump(products_query)
         products = []
         for product in products_query:
             price = product.prices.order_by(Price.price.desc()).first()
@@ -352,7 +271,6 @@ def products():
         product = Product(**request_data)
 
         #Creating new price item
-        # price = Price(price=price, supplier_id=s_id, product_id=product.id)
         price = Price(price=price, supplier_id=s_id)
         product.prices.append(price)
         db.session.add(product)
@@ -382,7 +300,7 @@ def productDetails(id):
     elif request.method  == "DELETE":
         db.session.delete(product)
         db.session.commit()
-        #incase of session.query().filter().delete() -- on the parent and child model use "passive_deletes" $ "ondelete"
+        
         return jsonify({"msg": "Product Deleted"})
 
 @main.route('/prices/<int:id>', methods = methods)
@@ -397,13 +315,7 @@ def prices(id):
 
     #creating empty product list
     products = []
-
-    # Converting the result to dictionary
-        # for p in result:
-        #     pd = product_schema.dump(p) | price_schema.dump(p.prices[0])
-        #     products.append(pd)
-        # print(products)
-
+    
     # Converting result 2 to dictionary
     for p, pr in result1.all():
         dic = product_schema.dump(p) | price_schema.dump(pr)
@@ -417,10 +329,6 @@ def prices(id):
         product = Product.query.filter_by()
         supplier = Supplier.query.filter_by()
         price = Price(**request_data)
-        # price = Price(price=price, supplier_id=data, product_id=product.id)
-        # price = Price(price=price, supplier_id=s_id)
-        # product.prices.append(price)
-        # db.session.add(product)
         print(price)
         db.session.add(price)
         db.session.commit()
@@ -460,14 +368,8 @@ def jobs():
         return jsonify(jobs)
 
     elif request.method == "POST":
-        # Job.__table__.drop(db.engine) --To drob a table
-        print(request)
         request_data = request.get_json()
-        print(request_data)
-        # job = Job(**request_data)
         job = Job(code = request_data["code"], client_id = request_data["client_id"])
-        # job = Job(code = request_data["code"], client_id = request_data["client_id"], value=0, lpo=0, cheque=0)
-        print(job)
         db.session.add(job)
         db.session.commit()
         return job_schema.jsonify(job)
@@ -494,9 +396,6 @@ def jobDedatils(id):
             return jsonify({"msg":"Invalid"})
     elif request.method == "POST":
         request_data = request.get_json()
-        # request_data.pop("id")
-        # product = Product.query.filter_by(id = request_data["product_id"])
-        # minBuying = product.prices.order_by(Price.price.asc()).first()
         prices = Price.query.filter_by(product_id=request_data["product_id"])
         minBuying = prices.order_by(Price.price.asc()).first()
         supply = Supply(
@@ -516,10 +415,8 @@ def jobDedatils(id):
         job_query.value = job_value
         db.session.commit()
 
-
-
-
         return  jsonify(job_query.value)
+
     elif request.method == "PUT":
         request_data = request.get_json()
         for key, value in request_data.items():
@@ -540,10 +437,6 @@ def jobDedatils(id):
 @main.route("/supplies/<int:id>", methods=methods)
 @cross_origin()
 def supplies(id):
-    # supplies_query = Supply.query.all()
-    # if request.method == "GET":
-    #     supplies = supplies_schema.dump(supplies_query)
-    #     return jsonify(supplies)
     supply_query = Supply.query.filter_by(id=id).first()
     if request.method == "PUT":
         request_data = request.get_json()
@@ -631,12 +524,10 @@ def generateDocs(id, slug):
         with open('dict.csv', "w", newline="") as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(column_heads)
-            # writer.writerow(['brand', 'name', 'qty', 'price', 'maxBuying', 'total', 'minBuying', 'total_buying']) #To get proper placement we can feed a list of headers manually
             total_buying = 0
             total_selling = 0
             for s in supplies:
                 writer.writerow(list(s.values()))
-                # writer.writerow([s['brand'], s['name'], s['qty'], s['price'] ...etc] )
                 total_buying += (s["minBuying"]* s["qty"])
                 total_selling += s["total"]
             writer.writerow(["","", "", "Grand Total", total_selling, "","", total_buying, "Difference",(total_selling-total_buying)])
@@ -647,27 +538,6 @@ def generateDocs(id, slug):
                     as_attachment=True
                 )
 
-    #Creating the csv using pandas from a dict
-    # df = pd.DataFrame(supplies)
-        # df[["name", "brand", "qty", "minBuying", "maxBuying","price","total_buying","total"]].to_csv("trial1.csv", index=False)
-
-        #Creating the csv with csv writer -- With this naming convetion it overwrites file with similar name
-        # with open('dict.csv', "w", newline="") as csvfile:
-        #     writer = csv.DictWriter(csvfile, fieldnames=column_heads)
-        #     writer.writeheader()
-        #     writer.writerows(supplies)
-        
-    #Creating with query -- not working(for future reference)
-        # print(job_query[0].keys())
-        # fh = open('data.csv', 'wb')
-        # outcsv = csv.writer(fh)
-        # # outcsv.writerow(job_query[0].keys())
-        # outcsv.writerow(job_query)
-        # fh.close()
-
-
-        # return .....
-    
     elif slug == "xlsx":
         #Creating an Excel Workbook
         wb = Workbook()
@@ -681,20 +551,12 @@ def generateDocs(id, slug):
         total_selling = 0
         for s in supplies:
             data = [s['brand'], s['name'], s['qty'], s['price'], s['total'], s['maxBuying'], s['minBuying'], s['total_buying']]
-            # data = list(s.values())
             ws.append(data)
             total_buying += (s["minBuying"]* s["qty"])
             total_selling += s["total"]
         # Add summary
         summary = ["", "", "", "Grand Total", total_selling, "", "", total_buying, "Difference", (total_selling-total_buying)]
         ws.append(summary)
-
-        # Set response headers --- In this case we do not use the buffer 
-        # response = make_response(wb.save_as_stream())
-        # response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        # response.headers['Content-Disposition'] = 'attachment; filename=filename'
-
-        # return response
 
 
         # Saving the workbook to a buffer 
@@ -766,7 +628,6 @@ def generateDocs(id, slug):
         return response
 
     elif slug == 'rfq':
-        # context = {"msg":"Hello 23", "type":slug}
         a = [{"title":"RFQ", "body":"Quotation for RFQ"}]
         response = util.printPdf(context, a)
 
