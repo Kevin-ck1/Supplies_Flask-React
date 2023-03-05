@@ -1,0 +1,80 @@
+/* Set the box model to border-box */
+* {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+/* Set border and border-collapse properties */
+table, th, td {
+    border: 1px solid;
+    -webkit-border-horizontal-spacing: 0;
+    -webkit-border-vertical-spacing: 0;
+    border-collapse: collapse;
+}
+
+/* Set padding for table cells */
+th, td {
+    padding: 5px;
+}
+
+/* Set background color for even rows */
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Set flexbox properties for .doc_details and .header classes */
+.doc_details, .header {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+/* Set flexbox properties for .card class */
+.card {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -ms-flex-align: start;
+    align-items: flex-start;
+    width: 75%;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    padding: .25rem;
+}
+
+/* Set width and margin properties for .card > * class */
+.card > * {
+    width: 400px;
+    margin: .25rem;
+}
+
+/* Set border, font-size, padding and margin properties for .card + div > * class */
+.card + div > * {
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    font-size: .75rem;
+    padding: .25rem;
+    margin: .25rem;
+}
+
+
+.table {
+    -webkit-counter-reset: rowCount;
+    counter-reset: rowCount;
+}
+
+.rowCounter::before{
+    /* Increase counter by 1 */
+    -webkit-counter-increment: rowCount;
+    counter-increment: rowCount;
+    content: counter(rowCount);
+  }
+

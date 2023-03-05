@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Flask Tutorial</title>
+    <!-- To incorporate styling we can use the below link -->
+    <!-- <link href={{ url_for('static', filename='styles_print.css', _external=True) }} rel='stylesheet'> -->
+
+    <!-- We can also use inline styling -->
+    <style>
+        /* body {
+            background-color: red;
+        } */
+    </style>
+</head>
+<body>
+    <div>
+        <h1>ABC SUPPLIES</h1>
+        <div class="header">
+           <div class="company_details">
+                <p>Dealers in: General Supplies</p>
+                <p>P.O Box: 123-234</p>
+                <p>Email: Abc@supplies.com</p>
+           </div>
+                
+           <div>
+            {% if type.title == "Invoice"%}
+                <p>{{type.title}} #-{{notes.invoiceNo}}</p>
+            {% endif %}
+            {% if type.title == "Delivery"%}
+                <p>{{type.title}} #-{{notes.deliveryNo}}</p>
+            {% endif %}
+            {% if type.title == "Receipt"%}
+                <p>{{type.title}} #-{{notes.receiptNo}}</p>
+            {% endif %}
+           </div>
+        </div>
+
+        <div style="display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex; -webkit-box-pack: center; -webkit-justify-content: center; -ms-flex-pack: center; justify-content: center;">
+            <h3>{{type.body}}</h3>
+        </div>
+
+        <div class="doc_details">
+            <div class="card">
+                <p class="items">M/S</p>
+                <h4 class="items">{{job.nameC}}</h4>
+                <p class="items">B.O BOX: {{job.address}}</p>
+                <p class="items">Email: {{job.email}}</p>
+            </div>
+            <div >
+                <p class="rfqDate">DATE: {{date}}</p>
+                <p>RFQ No. {{job.code}}</p>
+                {%if job.lpo%}
+                    <p>LPO No. {{job.lpo}}</p>
+                {%endif%}
+                {%if type.title != "Delivery" %}
+                    <p>Supply Value {{job.value}} KSH</p>
+                {%endif%}
+            </div>
+        </div>
+
+        <hr>
+
+        <div style="width: 100%">
+            <table class="table" style="width: 100%">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:3%" class="text-center">#</th>
+                        <th scope="col" style="width:20%" class="text-center">Name</th>
+                        <th scope="col" style="width:18%" class="text-center">Category</th>
+                        <th scope="col" style="width:18%" class="text-center">QTY</th>
+                        {%if type.title != "Delivery" %}
+                            <th scope="col" style="width:18%" class="text-center">Price</th>
+                            <th scope="col" style="width:18%" class="text-center">Total</th>
+                        {%endif%}
+                        
+                    </tr>
+                </thead>
+                <tbody id="suppliesTable">
+                    {% for supply in supplies %}
+                        <tr id="{{supply.id}}">
+                            <th scope="row" class="rowCounter text-center"></th>
+                            <td id="name" class="text-center" >{{supply.name}} : {{supply.brand}} </td>
+                            <td id="category" class="text-center">{{supply.category}}</td>
+                            <td id="qty" class="text-center">{{supply.qty}}</td>
+                            {%if type.title != "Delivery" %}
+                                <td id="price" class="text-center">{{supply.price}}</td>
+                                <td id="total" class="text-center">{{supply.total}}</td>
+                            {%endif%}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

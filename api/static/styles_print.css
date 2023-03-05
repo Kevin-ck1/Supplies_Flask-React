@@ -1,0 +1,53 @@
+
+table, th, td {
+    border: 1px solid;
+    border-collapse: collapse;
+}
+
+th, td {
+   padding: auto; 
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* .doc_details, .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+} */
+.header {
+    background-color: red;
+    display: flex;
+    justify-content: space-between;
+}
+
+.header > div {
+    width: auto;
+    height: auto;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 75%;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    padding: .25rem;
+
+}
+
+.card > * {
+    width: 400px;
+    margin: .25rem;
+}
+.card + div > * {
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+    font-size: .75rem;
+    padding: .25rem;
+    margin: .25rem;
+}
